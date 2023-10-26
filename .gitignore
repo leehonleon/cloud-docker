@@ -1,0 +1,6 @@
+/cloud-dev/mysql
+/cloud-dev/nacos/standalone-logs
+/cloud-dev/rabbitmq/data
+/cloud-dev/rabbitmq/log
+/cloud-dev/redis/data
+/cloud-dev/redis/logs

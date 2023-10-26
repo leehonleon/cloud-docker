@@ -1,0 +1,68 @@
+version: "3.8"
+services:
+  nacos:
+    image: nacos/nacos-server:${NACOS_VERSION}
+    hostname: ${PRJNAME}_nacos
+    container_name: ${PRJNAME}_nacos
+    env_file:
+      - ../env/custom-application-config.env
+    volumes:
+      - ./nacos/standalone-logs/:/home/nacos/logs
+      - ./nacos/init.d/application.properties:/home/nacos/conf/application.properties
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: always
+
+  mysql:
+    container_name: ${PRJNAME}_mysql
+    hostname: ${PRJNAME}_mysql
+    build:
+      context: .
+      dockerfile: ./image/mysql/5.7/Dockerfile
+    image: example/mysql:5.7
+    environment:
+      TZ: Asia/Shanghai
+    env_file:
+      - ../env/mysql.env
+    volumes:
+      - ./mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
+  redis:
+    container_name: ${PRJNAME}_redis
+    image: redis:5.0.10
+    hostname: ${PRJNAME}_redis
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "6379:6379"
+    volumes:
+      - ../env/redis.conf:/etc/redis/redis.conf
+      - ./redis/data:/data
+      - ./redis/logs:/logs
+    restart: always
+    command: ["redis-server", "/etc/redis/redis.conf"]
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: ${PRJNAME}_rabbitmq
+    hostname: ${PRJNAME}_rabbit
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ./rabbitmq/data/:/var/lib/rabbitmq/
+    restart: always
